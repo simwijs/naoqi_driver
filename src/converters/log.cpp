@@ -100,7 +100,8 @@ void logCallback(const qi::LogMessage& msg)
   log.level = LogLevel::get_from_qi(msg.level).ros_msg_;
   log.name = msg.category;
   log.msg = msg.message;
-  log.stamp = rclcpp::Time(msg.timestamp.tv_sec, msg.timestamp.tv_usec);
+  // TODO: Find timestamp info from msg.date (boost::chrono::time_point)
+  log.stamp = rclcpp::Time();//msg.timestamp.tv_sec, msg.timestamp.tv_usec);
 
   // If we are not publishing, the queue will increase, so we have to prevent an explosion
   // We only keep a log if it's within 5 second of the last publish (totally arbitrary)

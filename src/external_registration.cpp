@@ -30,6 +30,7 @@
 #include "naoqi_driver/tools.hpp"
 #include "naoqi_driver/ros_helpers.hpp"
 
+
 int main(int argc, char** argv) {
   const std::string no_password = "no_password";
   std::string protocol = "tcp://";
@@ -74,7 +75,6 @@ int main(int argc, char** argv) {
   // Build the q::ApplicationSession, and connect the associated session
   qi::Url url(protocol + nao_ip + ":" + std::to_string(nao_port));
   qi::ApplicationSession app(argc, argv);
-
 #if LIBQI_VERSION >= 29
   if (password.compare(no_password) != 0) {
     naoqi::DriverAuthenticatorFactory *factory = new naoqi::DriverAuthenticatorFactory;
@@ -85,17 +85,14 @@ int main(int argc, char** argv) {
       qi::ClientAuthenticatorFactoryPtr(factory));
   }
 #endif
-
   qi::Future<void> connection = app.session()->connect(url);
-  
   if (connection.hasError()) {
     std::cout << BOLDRED << connection.error() <<  RESETCOLOR << std::endl;
     return 0;
   }
-  
   // Register the ROS-Driver service and init the driver node
   app.session()->registerService("ROS-Driver", bs);
-
+  
   // Pass the create session to the driver node, and init the node
   bs->setQiSession(app.session());
   bs->init();
@@ -104,9 +101,14 @@ int main(int argc, char** argv) {
             << RESETCOLOR 
             << std::endl;
   
-  // Run the qi::ApplicationSession
-  app.run();
-  
+  // app.run()
+  while(rclcpp::ok()) {
+    sleep(0.2);
+  }
+  // colcon build && source install/setup.zsh
+  // RUn in background:
+  // ros2 launch naoqi_driver naoqi_driver.launch.py nao_ip:=$PEPPER_IP network_interface:=enp5s0 &
+
   // Stop the driver service, close the qi::Session and stop ROS
   bs->stopService();
   app.session()->close();

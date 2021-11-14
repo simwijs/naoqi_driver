@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(naoqi_driver)
 
+#set(Boost_NO_BOOST_CMAKE)
+#set(BOOST_ROOT /usr/local/include/boost/)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -10,8 +13,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(naoqi_bridge_msgs REQUIRED)
-find_package(naoqi_libqi REQUIRED)
-find_package(naoqi_libqicore REQUIRED)
+find_package(qi REQUIRED)
+find_package(qicore REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -91,13 +94,13 @@ set(
   src/event/touch.cpp
 )
 
-add_definitions(-DLIBQI_VERSION=${naoqi_libqi_VERSION_MAJOR}${naoqi_libqi_VERSION_MINOR})
+add_definitions(-DLIBQI_VERSION=${qi_VERSION_MAJOR}${qi_VERSION_MINOR})
 
 # Add pre-processor compile flag indicating ament
 add_definitions( -DAMENT_BUILD )
 
 include_directories(include 
-  ${naoqi_libqi_INCLUDE_DIRS}
+  ${QI_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS})
 
@@ -135,8 +138,8 @@ ament_target_dependencies(naoqi_driver
   image_transport
   kdl_parser
   naoqi_bridge_msgs
-  naoqi_libqi
-  naoqi_libqicore
+  qi
+  qicore
   robot_state_publisher
   sensor_msgs
   tf2_geometry_msgs
@@ -157,7 +160,8 @@ add_executable(naoqi_driver_node src/external_registration.cpp)
 target_link_libraries(naoqi_driver_node
     naoqi_driver
     ${rclcpp_LIBRARIES}
-    ${naoqi_libqi_LIBRARIES}
+    ${QI_LIBRARIES}
+    ${QICORE_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 

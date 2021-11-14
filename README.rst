@@ -1,3 +1,58 @@
+Docker Instructions
+===========
+You can run this naoqi driver in a docker container.
+Use a volume link using docker-compose,
+e.g.
+```
+# 'workspace' is just your WORKDIR in your Dockerfile
+- ./src/YOUR_PACKAGE:/workspace/YOUR_REPO/src/YOUR_PACKAGE
+- ./src/naoqi_driver:/workspace/YOUR_REPO/src/naoqi_driver
+- ./src/naoqi_bridge_msgs:/workspace/YOUR_REPO/src/naoqi_bridge_msgs
+```
+For naoqi 2.5 this Dockerfile would look like the following:
+```
+FROM ros:foxy
+RUN sh \
+    -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" \
+        > /etc/apt/sources.list.d/ros-latest.list'
+RUN wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+RUN apt-get update
+
+# Get and build boost
+RUN cd / && wget https://deac-ams.dl.sourceforge.net/project/boost/boost/1.62.0/boost_1_62_0.tar.gz
+RUN cd / && tar zxvf boost_1_62_0.tar.gz && rm boost_1_62_0.tar.gz
+RUN cd /boost_1_62_0 \
+ && ./bootstrap.sh --with-libraries=all --with-toolset=gcc \
+ && ./b2 install -j 8
+
+RUN apt-get install ros-foxy-diagnostic-updater
+RUN apt-get install ros-foxy-robot-state-publisher
+
+# Install naoqi c++ sdk
+RUN python3 -m pip install qibuild
+RUN mkdir -p /opt
+RUN cd /opt && git clone https://github.com/samiamlabs/libqi.git -b release-2.5
+RUN cd /opt/libqi && mkdir build && cd build && cmake .. -DQI_WITH_TESTS=OFF
+RUN cd /opt/libqi/build && make -j 8 && make install
+
+RUN cd /opt && git clone https://github.com/aldebaran/libqicore.git -b release-2.5
+RUN cd /opt/libqicore && mkdir build && cd build && cmake .. -DQI_WITH_TESTS=OFF
+RUN cd /opt/libqicore/build && make -j 8 && make install
+
+# Install dependencies
+COPY src/YOUR_PACKAGE src/YOUR_PACKAGE
+RUN rosdep install --from-paths src --ignore-src -r -y
+
+# Add sourcing script
+RUN echo "\nsource /workspace/liu-home-wreckers/src/lhw_qi/activate" >> /etc/zsh/zshrc
+
+# Will be mounted later (that volume mount, remember?)
+RUN rm -rf src
+
+# Link
+RUN ldconfig
+```
+
 Description
 ===========
 

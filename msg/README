@@ -1,9 +1,6 @@
 this folder is just meant to be run as follows:
 
-git clone --depth=1 https://github.com/ros-naoqi/naoqi_bridge.git
-mv naoqi_bridge/naoqi_msgs ./
-rm -fr naoqi_bridge
-catkin_make --build ./build --source ./
-mv devel/include/* ../include/
-rm -fr build devel naoqi_msgs
-rm CMakeLists.txt
+git clone --depth=1 https://github.com/simwijs/naoqi_bridge_msgs -b ros2
+mv naoqi_bridge_msgs ../../ && cd ../../../
+colcon build && source install/setup.zsh
+rm -rf src/naoqi_bridge_msgs
